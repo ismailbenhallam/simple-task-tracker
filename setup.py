@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-from task_tracker import __version__
+from simple_task_tracker import __version__
 
 with open("requirements.txt", "r", encoding="utf-8") as f:
     requirements = f.read().splitlines()
@@ -8,7 +8,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="task_tracker",
+    name="simple_task_tracker",
     version=__version__,
     author="Ismail BENHALLAM",
     author_email="ismailben44@gmail.com",
@@ -19,10 +19,10 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     keywords=["track", "task", "time"],
-    url="https://github.com/ismailbenhallam/task-tracker/",
+    url="https://github.com/ismailbenhallam/simple-task-tracker/",
     entry_points={
         "console_scripts": [
-            "tt=task_tracker.main:main",
+            "tracker=simple_task_tracker.main:main",
         ],
     },
     classifiers=[

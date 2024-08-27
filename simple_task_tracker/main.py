@@ -6,7 +6,7 @@ from typing import Dict
 
 app = typer.Typer(add_help_option=False, add_completion=False)
 
-APP_NAME = "task_tracker"
+APP_NAME = "simple_task_tracker"
 DEFAULT_PROJECT = "GLOBAL"
 TASK_TRACKER_DIR: str = typer.get_app_dir(APP_NAME)
 
