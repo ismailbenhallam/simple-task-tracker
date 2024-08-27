@@ -302,11 +302,15 @@ def logs(project: str | None = typer.Argument(None,
     for project in projects_names:
         project_name = project.split(".")[0]
         project_data = load_project_data(project_name)
-        if not project_data:
+        if project_data is None:
             typer.echo(f"No project found with the name '{project}'")
             raise typer.Exit(code=1)
 
         project_total_duration: timedelta = timedelta(seconds=0)
+
+        if len(project_data.items()) == 0:
+            typer.echo(f"No tasks found for '{project_name}'")
+            continue
 
         typer.echo(f" -------- '{project_name}' tasks --------")
         for (task_name, task_data) in project_data.items():
@@ -325,7 +329,7 @@ def logs(project: str | None = typer.Argument(None,
             typer.echo(
                 f"•{"⏳ " if is_not_ended else "✅ "} '{task_name}' => {str(task_total_duration).split(".")[0]} ")
 
-        typer.echo(f">> ⏱️ Total duration: {str(project_total_duration).split(".")[0]}")
+        typer.echo(f">> ⏱️  Total duration: {str(project_total_duration).split(".")[0]}")
         typer.echo()
 
 
