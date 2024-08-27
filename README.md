@@ -1,9 +1,9 @@
 # Task Tracker CLI
 
 <!-- [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) -->
-[![PyPI - Version](https://img.shields.io/pypi/v/simple-task-tracker?style=for-the-badge)](https://pypi.org/project/task-tracker/)
+[![PyPI - Version](https://img.shields.io/pypi/v/simple-task-tracker?style=for-the-badge)](https://pypi.org/project/simple-task-tracker/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/simple-task-tracker?style=for-the-badge)
-[![GitHub License](https://img.shields.io/github/license/ismailbenhallam/prayer-times-cli?style=for-the-badge)](https://github.com/ismailbenhallam/prayer-times-cli/?tab=MIT-1-ov-file)
+[![GitHub License](https://img.shields.io/github/license/ismailbenhallam/simple-task-tracker?style=for-the-badge)](https://github.com/ismailbenhallam/simple-task-tracker/?tab=MIT-1-ov-file)
 
 <!-- ![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/ismailbenhallam/prayer-times-cli)
 ![GitHub Repo stars](https://img.shields.io/github/stars/ismailbenhallam/prayer-times-cli?)-->
