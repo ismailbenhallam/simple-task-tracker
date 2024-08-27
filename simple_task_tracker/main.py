@@ -335,6 +335,10 @@ def display_help(ctx: typer.Context):
     print(ctx.parent.get_help())
 
 
-if __name__ == "__main__":
+def main():
     os.makedirs(get_today_folder(), exist_ok=True)
     app()
+
+
+if __name__ == "__main__":
+    main()
