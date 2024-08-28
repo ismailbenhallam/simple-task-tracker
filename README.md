@@ -1,4 +1,4 @@
-# Task Tracker CLI
+# Simple Task Tracker CLI
 
 <!-- [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) -->
 [![PyPI - Version](https://img.shields.io/pypi/v/simple-task-tracker?style=for-the-badge)](https://pypi.org/project/simple-task-tracker/)
@@ -38,22 +38,22 @@ pip install simple-task-tracker
 After the installation, you can run the CLI application with the following command:
 
 ```shell
-tracker help
+tt help
 ```
 
 This will display the list of available commands and their descriptions.
 
 ### Commands
 
-- `tracker active`:   List all active tasks
-- `tracker delete`:   Delete a task
-- `tracker help`  :   Show help message
-- `tracker log`   :   Log all tasks of the day
-- `tracker pause` :   Pause the active task
-- `tracker resume`:   Resume last stopped task
-- `tracker save`  :   Save a new task as ended. The ended time is the time right now, and the starting time is calculated using (now - duration_in_minutes)
-- `tracker start` :   Start a task
-- `tracker stop`  :   Mark a task as done. It can be restarted again using 'start' command. If no task is specified, stop the only active task.
+- `tt active`:   (or "a") List all active tasks
+- `tt delete`:   (or "d") Delete a task
+- `tt help`  :   (or "h") Show help message
+- `tt log`   :   (or "l") Log all tasks of the day
+- `tt pause` :   (or "p") Pause the active task
+- `tt resume`:   (or "r") Resume last stopped task
+- `tt create`:   (or "c") Save a new task as ended. The ended time is the time right now, and the starting time is calculated using (now - duration_in_minutes)
+- `tt start` :   (or "s") Start a task
+- `tt finish`:   (or "f") Mark a task as done. It can be restarted again using 'start' command. If no task is specified, stop the only active task.
 
 ## Contributing
 

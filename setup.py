@@ -15,14 +15,14 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=requirements,
-    description="Task Tracker CLI",
+    description="Simple Task Tracker CLI",
     long_description=long_description,
     long_description_content_type="text/markdown",
     keywords=["track", "task", "time"],
     url="https://github.com/ismailbenhallam/simple-task-tracker/",
     entry_points={
         "console_scripts": [
-            "tracker=simple_task_tracker.main:main",
+            "tt=simple_task_tracker.main:main",
         ],
     },
     classifiers=[

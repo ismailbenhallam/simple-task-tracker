@@ -45,8 +45,9 @@ def save_project_data(project: str, data: Dict):
 
 
 @app.command()
+@app.command(name="s", hidden=True)
 def start(task: str, project: str = typer.Argument(DEFAULT_PROJECT)):
-    """Start a task"""
+    """(or "s") Start a task"""
 
     project_data = load_project_data(project)
     start_time = datetime.now()
@@ -95,8 +96,9 @@ def start(task: str, project: str = typer.Argument(DEFAULT_PROJECT)):
 
 
 @app.command()
-def stop(task: str, project_name: str = typer.Argument(DEFAULT_PROJECT)):
-    """Mark a task as done. It can be restarted again using 'start' command. If no task is specified, stop the only active task."""
+@app.command(name="f", hidden=True)
+def finish(task: str, project_name: str = typer.Argument(DEFAULT_PROJECT)):
+    """(or "f") Mark a task as done. It can be restarted again using 'start' command."""
     project_data = load_project_data(project_name)
 
     # Project not found
@@ -137,10 +139,11 @@ def stop(task: str, project_name: str = typer.Argument(DEFAULT_PROJECT)):
 
 
 @app.command()
-def save(
+@app.command(name="c", hidden=True)
+def create(
     task: str, duration_in_minutes: int, project: str = typer.Argument(DEFAULT_PROJECT)
 ):
-    """Save a new task as ended. The ended time is the time right now, and the starting time is calculated using (now - duration_in_minutes)"""
+    """(or "c") Create a new task as ended. The ended time is the time right now, and the starting time is calculated using (now - duration_in_minutes)"""
     project_data = load_project_data(project)
     ended_at: datetime = datetime.now()
     started_at: datetime = ended_at - timedelta(minutes=duration_in_minutes)
@@ -180,8 +183,9 @@ def save(
 
 
 @app.command()
+@app.command(name="d", hidden=True)
 def delete(task: str, project: str = typer.Argument(DEFAULT_PROJECT)):
-    """Delete a task"""
+    """(or "d") Delete a task"""
     project_data = load_project_data(project)
 
     # Project doesn't exist
@@ -210,8 +214,9 @@ def delete(task: str, project: str = typer.Argument(DEFAULT_PROJECT)):
 
 
 @app.command()
+@app.command(name="a", hidden=True)
 def active(from_command: bool = typer.Argument(hidden=True, default=False)):
-    """List all active tasks"""
+    """(or "a") List all active tasks"""
 
     projects_names = os.listdir(get_today_folder())
 
@@ -245,8 +250,9 @@ def active(from_command: bool = typer.Argument(hidden=True, default=False)):
 
 
 @app.command()
+@app.command(name="r", hidden=True)
 def resume():
-    """Resume last stopped task"""
+    """(or "r") Resume last stopped task"""
 
     active_tasks = active(from_command=True)
     if len(active_tasks) > 0:
@@ -290,8 +296,9 @@ def resume():
 
 
 @app.command()
+@app.command(name="p", hidden=True)
 def pause():
-    """Pause the active task"""
+    """(or "p") Pause the active task"""
     active_tasks = active(from_command=True)
     if len(active_tasks) == 0:
         typer.echo(f"No active tasks")
@@ -309,13 +316,14 @@ def pause():
         typer.echo(f"Task '{active_task_name}' stopped")
 
 
+@app.command(name="l", hidden=True)
 @app.command()
 def log(
     project: str | None = typer.Argument(
         None, help="Project name. If not specified, all projects' tasks are listed"
     ),
 ):
-    """Log all tasks of the day"""
+    """(or "l") Log all tasks of the day"""
 
     if not project:
         projects_names = os.listdir(get_today_folder())
@@ -365,8 +373,9 @@ def log(
 
 
 @app.command(name="help")
+@app.command(name="h", hidden=True)
 def display_help(ctx: typer.Context):
-    """Show this help message"""
+    """(or "h") Show this help message"""
     print(ctx.parent.get_help())
 
 
