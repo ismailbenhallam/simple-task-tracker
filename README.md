@@ -5,8 +5,8 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/simple-task-tracker?style=for-the-badge)
 [![GitHub License](https://img.shields.io/github/license/ismailbenhallam/simple-task-tracker?style=for-the-badge)](https://github.com/ismailbenhallam/simple-task-tracker/?tab=MIT-1-ov-file)
 
-<!-- ![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/ismailbenhallam/prayer-times-cli)
-![GitHub Repo stars](https://img.shields.io/github/stars/ismailbenhallam/prayer-times-cli?)-->
+<!-- ![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/ismailbenhallam/simple-task-tracker)
+![GitHub Repo stars](https://img.shields.io/github/stars/ismailbenhallam/simple-task-tracker?)-->
 
 A command-line interface (CLI) application to keep track of your tasks, their starting time, finishing time and their
 durations.
@@ -58,12 +58,12 @@ This will display the list of available commands and their descriptions.
 ## Contributing
 
 Contributions are welcome! If you find any issues or have suggestions for improvements, please open an issue or submit a
-pull request on the [GitHub repository](https://github.com/ismailbenhallam/prayer-times-cli/).
+pull request on the [GitHub repository](https://github.com/ismailbenhallam/simple-task-tracker/).
 
 ## License
 
 This project is licensed under
-the [MIT License](https://github.com/ismailbenhallam/prayer-times-cli/?tab=MIT-1-ov-file).
+the [MIT License](https://github.com/ismailbenhallam/simple-task-tracker/?tab=MIT-1-ov-file).
 
 ## Contact
 
