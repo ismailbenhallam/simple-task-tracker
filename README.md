@@ -48,7 +48,7 @@ This will display the list of available commands and their descriptions.
 - `tracker active`:   List all active tasks
 - `tracker delete`:   Delete a task
 - `tracker help`  :   Show help message
-- `tracker logs`  :   Log all tasks of the day
+- `tracker log`   :   Log all tasks of the day
 - `tracker pause` :   Pause the active task
 - `tracker resume`:   Resume last stopped task
 - `tracker save`  :   Save a new task as ended. The ended time is the time right now, and the starting time is calculated using (now - duration_in_minutes)
