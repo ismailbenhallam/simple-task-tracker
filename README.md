@@ -45,15 +45,16 @@ This will display the list of available commands and their descriptions.
 
 ### Commands
 
-- `tt active`:   (or "a") List all active tasks
-- `tt delete`:   (or "d") Delete a task
-- `tt help`  :   (or "h") Show help message
-- `tt log`   :   (or "l") Log all tasks of the day
-- `tt pause` :   (or "p") Pause the active task
-- `tt resume`:   (or "r") Resume last stopped task
-- `tt create`:   (or "c") Save a new task as ended. The ended time is the time right now, and the starting time is calculated using (now - duration_in_minutes)
-- `tt start` :   (or "s") Start a task
-- `tt finish`:   (or "f") Mark a task as done. It can be restarted again using 'start' command. If no task is specified, stop the only active task.
+- `tt active`:   (or **"a"**) List all active tasks
+- `tt create`:   (or **"c"**) Save a new task as ended. The ended time is the time right now, and the starting time is calculated using (now - duration_in_minutes)
+- `tt delete`:   (or **"d"**) Delete a task
+- `tt finish`:   (or **"f"**) Mark a task as done. It can be restarted again using 'start' command. If no task is specified, stop the only active task.
+- `tt help`  :   (or **"h"**) Show help message
+- `tt log`   :   (or **"l"**) Log all tasks of the day
+- `tt pause` :   (or **"p"**) Pause the active task
+- `tt resume`:   (or **"r"**) Resume last stopped task
+- `tt start` :   (or **"s"**) Start a task
+- `tt week`  :   (or **"w"**) Log the current week stats about all project
 
 ## Contributing
 

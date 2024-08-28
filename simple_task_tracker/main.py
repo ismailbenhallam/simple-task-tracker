@@ -18,19 +18,30 @@ def get_today_folder() -> str:
     )
 
 
-def get_project_file_path(project: str) -> str:
-    today = date.today()
+def get_folder_of_day(day: datetime) -> str:
     return os.path.join(
-        TASK_TRACKER_DIR,
-        f"{today.year}",
-        f"{today.month:02d}",
-        f"{today.day:02d}",
-        f"{project}.json",
+        TASK_TRACKER_DIR, f"{day.year}", f"{day.month:02d}", f"{day.day:02d}"
     )
+
+
+def get_project_file_path(project: str) -> str:
+    return os.path.join(get_today_folder(), f"{project}.json")
+
+
+def get_project_file_folder_of_day(day: datetime, project: str) -> str:
+    return os.path.join(get_folder_of_day(day), f"{project}.json")
 
 
 def load_project_data(project: str) -> Dict | None:
     file_path = get_project_file_path(project)
+    if os.path.exists(file_path):
+        with open(file_path, "r") as f:
+            return json.load(f)
+    return None
+
+
+def load_project_data_of_day(project: str, day: datetime) -> Dict | None:
+    file_path = get_project_file_folder_of_day(day, project)
     if os.path.exists(file_path):
         with open(file_path, "r") as f:
             return json.load(f)
@@ -347,6 +358,7 @@ def log(
             typer.echo(f"No tasks found for '{project_name}'")
             continue
 
+        now = datetime.now()
         typer.echo(f" -------- '{project_name}' tasks --------")
         for task_name, task_data in project_data.items():
             task_total_duration: timedelta = timedelta(seconds=0)
@@ -358,7 +370,7 @@ def log(
                     ) - datetime.fromisoformat(data["started_at"])
                 else:
                     is_not_ended = True
-                    task_total_duration += datetime.today() - datetime.fromisoformat(
+                    task_total_duration += now - datetime.fromisoformat(
                         data["started_at"]
                     )
 
@@ -370,6 +382,55 @@ def log(
 
         typer.echo(f">> ⏱️  Total duration: {str(project_total_duration).split(".")[0]}")
         typer.echo()
+
+
+@app.command(name="w", hidden=True)
+@app.command()
+def week():
+    """(or "w") Log the current week stats about all project"""
+    now = datetime.today()
+    first_day_of_the_week: datetime = now - timedelta(now.weekday())
+    first_second_of_the_week = first_day_of_the_week.replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+
+    delta = now - first_second_of_the_week
+
+    # Name of the project, total duration of all its task of the whole week
+    project_tasks_total_duration: dict[str, timedelta] = {}
+
+    for d in range(delta.days + 1):
+        specific_day = first_second_of_the_week + timedelta(days=d)
+        day_project_names = os.listdir(get_folder_of_day(specific_day))
+
+        for day_project in day_project_names:
+            day_project = day_project.split(".")[0]
+            project_data = load_project_data_of_day(day_project, specific_day)
+            if project_data is None or project_data == {}:
+                continue
+
+            today_project_duration: timedelta = timedelta()
+            for task_name, task_data in project_data.items():
+                for data in task_data:
+                    if "ended_at" in data:
+                        today_project_duration += datetime.fromisoformat(
+                            data["ended_at"]
+                        ) - datetime.fromisoformat(data["started_at"])
+                    else:
+                        today_project_duration += now - datetime.fromisoformat(
+                            data["started_at"]
+                        )
+
+            project_tasks_duration_so_far: timedelta = (
+                project_tasks_total_duration.get(day_project) or timedelta()
+            )
+            project_tasks_total_duration[day_project] = (
+                project_tasks_duration_so_far + today_project_duration
+            )
+
+    for day_project in sorted(project_tasks_total_duration):
+        project_duration: timedelta = project_tasks_total_duration[day_project]
+        typer.echo(f"{day_project} : {str(project_duration).split('.')[0]}")
 
 
 @app.command(name="help")
