@@ -333,6 +333,7 @@ def log(
     project: str | None = typer.Argument(
         None, help="Project name. If not specified, all projects' tasks are listed"
     ),
+    brief: bool = typer.Option(False, "--brief", "-b", help="brief mode"),
 ):
     """(or "l") Log all tasks of the day"""
 
@@ -359,7 +360,10 @@ def log(
             continue
 
         now = datetime.now()
-        typer.echo(f" -------- '{project_name}' tasks --------")
+
+        if not brief:
+            typer.echo(f" -------- '{project_name}' tasks --------")
+
         for task_name, task_data in project_data.items():
             task_total_duration: timedelta = timedelta(seconds=0)
             is_not_ended = False
@@ -376,12 +380,16 @@ def log(
 
             project_total_duration += task_total_duration
 
-            typer.echo(
-                f"•{"⏳ " if is_not_ended else "✅ "} '{task_name}' => {str(task_total_duration).split(".")[0]} "
-            )
+            if not brief:
+                typer.echo(
+                    f"•{"⏳ " if is_not_ended else "✅ "} '{task_name}' => {str(task_total_duration).split(".")[0]} "
+                )
 
-        typer.echo(f">> ⏱️  Total duration: {str(project_total_duration).split(".")[0]}")
-        typer.echo()
+        typer.echo(
+            f">> {project_name if brief else "⏱ total duration"} : {str(project_total_duration).split(".")[0]}"
+        )
+        if not brief:
+            typer.echo()
 
 
 @app.command(name="w", hidden=True)
@@ -430,7 +438,7 @@ def week():
 
     for day_project in sorted(project_tasks_total_duration):
         project_duration: timedelta = project_tasks_total_duration[day_project]
-        typer.echo(f"{day_project} : {str(project_duration).split('.')[0]}")
+        typer.echo(f">> {day_project} : {str(project_duration).split('.')[0]}")
 
 
 @app.command(name="help")
