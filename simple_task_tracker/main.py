@@ -11,6 +11,18 @@ DEFAULT_PROJECT = "GLOBAL"
 TASK_TRACKER_DIR: str = typer.get_app_dir(APP_NAME)
 
 
+def _format_timedelta(timedelta: timedelta) -> str:
+    # Calculate total seconds
+    total_seconds = int(timedelta.total_seconds())
+
+    # Extract hours, minutes, and seconds
+    hours, remainder = divmod(total_seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+
+    # Format as HH:MM:SS
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+
 def get_today_folder() -> str:
     today = date.today()
     return os.path.join(
@@ -99,7 +111,7 @@ def start(task: str, project: str = typer.Argument(DEFAULT_PROJECT)):
             task_data = project_data[task]
             started_at = task_data[-1]["started_at"]
             duration: timedelta = datetime.now() - datetime.fromisoformat(started_at)
-            typer.echo(f"Task already started before {str(duration).split(".")[0]}")
+            typer.echo(f"Task already started before {_format_timedelta(duration)}")
             raise typer.Exit(code=1)
 
     save_project_data(project, project_data)
@@ -130,7 +142,7 @@ def finish(task: str, project_name: str = typer.Argument(DEFAULT_PROJECT)):
         ended_at = datetime.fromisoformat(task_data[-1]["ended_at"])
         duration: timedelta = datetime.now() - ended_at
         typer.echo(
-            f"Task '{task}' was already ended at before {str(duration).split(".")[0]}"
+            f"Task '{task}' was already ended at before {_format_timedelta(duration)}"
         )
         raise typer.Exit(code=1)
 
@@ -146,7 +158,7 @@ def finish(task: str, project_name: str = typer.Argument(DEFAULT_PROJECT)):
             data["ended_at"]
         ) - datetime.fromisoformat(data["started_at"])
 
-    typer.echo(f"Task ended. Total Duration: {str(task_total_duration).split(".")[0]}")
+    typer.echo(f"Task ended. Total Duration: {_format_timedelta(task_total_duration)}")
 
 
 @app.command()
@@ -382,11 +394,11 @@ def log(
 
             if not brief:
                 typer.echo(
-                    f"•{"⏳ " if is_not_ended else "✅ "} '{task_name}' => {str(task_total_duration).split(".")[0]} "
+                    f"•{"⏳ " if is_not_ended else "✅ "} '{task_name}' => {_format_timedelta(task_total_duration)} "
                 )
 
         typer.echo(
-            f">> {project_name if brief else "⏱ total duration"} : {str(project_total_duration).split(".")[0]}"
+            f">> {project_name if brief else "⏱ total duration"} : {_format_timedelta(project_total_duration)}"
         )
         if not brief:
             typer.echo()
@@ -438,7 +450,7 @@ def week():
 
     for day_project in sorted(project_tasks_total_duration):
         project_duration: timedelta = project_tasks_total_duration[day_project]
-        typer.echo(f">> {day_project} : {str(project_duration).split('.')[0]}")
+        typer.echo(f">> {day_project} : {_format_timedelta(project_duration)}")
 
 
 @app.command(name="help")
