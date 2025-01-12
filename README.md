@@ -50,10 +50,11 @@ This will display the list of available commands and their descriptions.
 - `tt delete`:   (or **"d"**) Delete a task
 - `tt finish`:   (or **"f"**) Mark a task as done. It can be restarted again using 'start' command. If no task is specified, stop the only active task.
 - `tt help`  :   (or **"h"**) Show help message
-- `tt log`   :   (or **"l"**) Log all tasks of the day
+- `tt log`   :   (or **"l"**) Log all tasks of the day **(DD-MM)**. If `--date` is not provided, today's date will be used.
 - `tt pause` :   (or **"p"**) Pause the active task
 - `tt resume`:   (or **"r"**) Resume last stopped task
 - `tt start` :   (or **"s"**) Start a task
+- `tt stats` :   Show statistics about your work patterns
 - `tt week`  :   (or **"w"**) Log the current week stats about all project
 
 ## Contributing
