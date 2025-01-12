@@ -3,7 +3,7 @@ import sqlite3
 from contextlib import contextmanager
 from datetime import datetime, timedelta, date
 from sqlite3 import Connection
-from typing import Tuple, Iterator
+from typing import Tuple, Iterator, List
 
 import typer
 
@@ -92,23 +92,18 @@ def init_db():
         conn.commit()
 
 
-def _format_timedelta(delta: timedelta, human_readable: bool = False) -> str:
+def _format_date(d: date) -> str:
+    """Format a date in DD-MM-YYYY format."""
+    return d.strftime("%d-%m-%Y")
+
+
+def _format_timedelta(delta: timedelta) -> str:
     if not isinstance(delta, timedelta):
         raise ValueError("_format_timedelta expects a timedelta object.")
 
     total_seconds = int(delta.total_seconds())
     hours, remainder = divmod(total_seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
-
-    if human_readable:
-        parts = []
-        if hours > 0:
-            parts.append(f"{hours} hour{'s' if hours > 1 else ''}")
-        if minutes > 0:
-            parts.append(f"{minutes} minute{'s' if minutes > 1 else ''}")
-        if seconds > 0:
-            parts.append(f"{seconds} second{'s' if seconds > 1 else ''}")
-        return ", ".join(parts)
 
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
@@ -142,10 +137,11 @@ def calculate_task_duration(conn, task_name: str, start_date: date, end_date: da
 
 @app.command()
 @app.command(name="s", hidden=True)
-def start(task: str):
-    """(or "s") Start a task."""
+def start(task_parts: List[str] = typer.Argument(..., help="Task name (can include spaces)")):
+    """(or "s") Start a task"""
     today = date.today()
     start_time = datetime.now()
+    task = " ".join(task_parts)
 
     with get_db() as conn:
         # Check for existing active tasks efficiently
@@ -180,16 +176,17 @@ def start(task: str):
 
 @app.command()
 @app.command(name="f", hidden=True)
-def finish(task: str):
+def finish(task_parts: List[str] = typer.Argument(..., help="Task name (can include spaces)")):
     """(or "f") Mark a task as done. It can be restarted again using 'start' command."""
     now = datetime.now()
     today = now.date()
+    task = " ".join(task_parts)
 
     with get_db() as conn:
         # Fetch all active tasks with the given name
         active_tasks = conn.execute(
-            "SELECT * FROM tasks WHERE name = ? AND date = ? AND ended_at IS NULL",
-            (task, today)
+            "SELECT * FROM tasks WHERE name = ? AND ended_at IS NULL",
+            (task,)
         ).fetchall()
 
         if not active_tasks:
@@ -206,16 +203,20 @@ def finish(task: str):
         total_duration = calculate_task_duration(conn, task, today)
         conn.commit()
 
-    typer.echo(f"Task '{task}' ended. Total time spent on this task today: {_format_timedelta(total_duration)}.")
+    typer.echo(f"\nTask '{task}' ended.\nTotal time spent on this task today: {_format_timedelta(total_duration)}.")
 
 
 @app.command()
 @app.command(name="c", hidden=True)
-def create(task: str, duration_in_minutes: int):
+def create(
+        task_parts: List[str] = typer.Argument(..., help="Task name (can include spaces)"),
+        duration_in_minutes: int = typer.Argument(..., help="Duration in minutes")
+):
     """(or "c") Create a new task as ended. The ended time is the time right now, and the starting time is calculated using (now - duration_in_minutes)"""
     ended_at = datetime.now()
     started_at = ended_at - timedelta(minutes=duration_in_minutes)
     today = ended_at.date()
+    task = " ".join(task_parts)
 
     with get_db() as conn:
         conn.execute(
@@ -231,9 +232,10 @@ def create(task: str, duration_in_minutes: int):
 
 @app.command()
 @app.command(name="d", hidden=True)
-def delete(task: str):
+def delete(task_parts: List[str] = typer.Argument(..., help="Task name (can include spaces)")):
     """(or "d") Delete a task"""
     today = date.today()
+    task = " ".join(task_parts)
 
     with get_db() as conn:
         task_exists = conn.execute(
@@ -269,10 +271,10 @@ def active(from_command: bool = typer.Argument(hidden=True, default=False)):
             SELECT name,
                    SUM(strftime('%s', 'now') - strftime('%s', started_at)) AS total_duration_seconds
             FROM tasks 
-            WHERE date = ? AND ended_at IS NULL
+            WHERE ended_at IS NULL
             GROUP BY name
             ORDER BY started_at ASC
-        """, (today,)).fetchall()
+        """).fetchall()
 
     if not active_tasks:
         if from_command:
@@ -378,7 +380,7 @@ def log(
         date_str: str = typer.Option(None, "--date", "-d", help="Date in DD-MM format")
 ):
     """
-    (or "l") Log all tasks of the day (DD-MM). If --date is not provided, today's date will be used.
+    (or "l") Log all tasks of the day (DD-MM). If --date is not provided, today's date will be used
     """
     try:
         today = date.today()
@@ -421,7 +423,7 @@ def log(
         if not brief:
             # Get the day of the week
             day_of_week = target_date.strftime('%A')
-            typer.echo(f"\n-------- Tasks for {target_date} ({day_of_week}) --------")
+            typer.echo(f"\n-------- Tasks for {_format_date(target_date)} ({day_of_week}) --------")
 
         for task in tasks:
             duration_seconds = task["total_seconds"] or 0
@@ -440,7 +442,7 @@ def log(
 @app.command()
 @app.command(name="w", hidden=True)
 def week():
-    """(or 'w') List all tasks for the current week along with their durations."""
+    """(or 'w') List all tasks for the current week along with their durations"""
     today = datetime.now().date()
 
     # Calculate the start of the current week (Monday)
@@ -473,7 +475,7 @@ def week():
 
     total_duration_all_tasks = 0  # Variable to sum all tasks' durations
 
-    typer.echo(f"Tasks for the week ({start_of_week} - {end_of_week}):")
+    typer.echo(f"\n-------- Tasks for the week ({_format_date(start_of_week)} - {_format_date(end_of_week)}) --------")
 
     for task in tasks_this_week:
         duration_seconds = task["total_duration_seconds"] or 0  # Handle NULL values
@@ -483,6 +485,90 @@ def week():
 
     total_duration_all_tasks_timedelta = timedelta(seconds=total_duration_all_tasks)
     typer.echo(f"\nTotal duration of all tasks: {_format_timedelta(total_duration_all_tasks_timedelta)}")
+
+
+@app.command(name="g", hidden=True)
+@app.command(name="grep")
+def grep(
+        pattern_parts: List[str] = typer.Argument(..., help="Search pattern (can include spaces)"),
+        date_str: str = typer.Option(None, "--date", "-d", help="Optional date in DD-MM format to limit search")
+):
+    """(or "g") Search for tasks containing the given pattern (case insensitive). Optionally limit to a specific date"""
+    pattern = " ".join(pattern_parts)
+
+    try:
+        today = date.today()
+        target_date = None
+        if date_str:
+            target_date = datetime.strptime(f"{date_str}-{today.year}", "%d-%m-%Y").date()
+    except ValueError:
+        typer.echo("Invalid date format. Please use DD-MM")
+        raise typer.Exit(code=1)
+
+    with get_db() as conn:
+        # Build the query based on whether a date was provided
+        query = """
+            SELECT 
+                name,
+                date,
+                SUM(CASE 
+                    WHEN ended_at IS NOT NULL 
+                    THEN strftime('%s', ended_at) - strftime('%s', started_at)
+                    ELSE strftime('%s', 'now', 'localtime') - strftime('%s', started_at)
+                END) AS total_seconds,
+                COUNT(CASE WHEN ended_at IS NULL THEN 1 END) AS active_count
+            FROM tasks 
+            WHERE name LIKE '%' || ? || '%' COLLATE NOCASE
+        """
+        params = [pattern]
+
+        if target_date:
+            query += " AND date = ?"
+            params.append(target_date)
+
+        query += """
+            GROUP BY name, date
+            ORDER BY date DESC, name
+        """
+
+        matching_tasks = conn.execute(query, params).fetchall()
+
+        if not matching_tasks:
+            date_msg = f" on {target_date}" if target_date else ""
+            typer.echo(f"No matching tasks found{date_msg}")
+            raise typer.Exit(code=0)
+
+        # Display results
+        current_date = None
+        daily_total_seconds = 0
+
+        for task in matching_tasks:
+            # When date changes, print previous day's total and reset counter
+            if current_date is not None and current_date != task['date']:
+                daily_total = timedelta(seconds=daily_total_seconds)
+                typer.echo(f" >>  Total: {_format_timedelta(daily_total)}")
+                daily_total_seconds = 0
+
+            # Print date header when date changes
+            if current_date != task['date']:
+                current_date = task['date']
+                typer.echo(f"\n-------- {_format_date(current_date)} ({current_date.strftime('%A')}) --------")
+
+            duration_seconds = task["total_seconds"] or 0
+            daily_total_seconds += duration_seconds
+            duration = timedelta(seconds=duration_seconds)
+            status = "⏳ " if task["active_count"] > 0 else "✅ "
+            typer.echo(f"• {status} {task['name']} => {_format_timedelta(duration)}")
+
+        # Print the total for the last day
+        if matching_tasks:
+            daily_total = timedelta(seconds=daily_total_seconds)
+            typer.echo(f" >>  Total: {_format_timedelta(daily_total)}")
+
+        # Calculate and display grand total
+        grand_total_seconds = sum((task["total_seconds"] or 0) for task in matching_tasks)
+        grand_total = timedelta(seconds=grand_total_seconds)
+        typer.echo(f"\n>> Grand total: {_format_timedelta(grand_total)}")
 
 
 @app.command(name="stats")
@@ -527,7 +613,7 @@ def statistics():
 
         weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
-        typer.echo("\n-------- Work Statistics --------")
+        typer.echo("\n-------- Work Statistics 📊 --------")
         if daily_avg and daily_avg['avg_seconds']:
             avg_duration = timedelta(seconds=daily_avg['avg_seconds'])
             typer.echo(f"• Average daily work (last 30 days): {_format_timedelta(avg_duration)}")
@@ -537,11 +623,13 @@ def statistics():
             weekday = weekdays[int(productive_day['weekday'])]
             typer.echo(f"• Most productive day: {weekday} (avg: {_format_timedelta(productive_duration)})")
 
+
 @app.command(name="help")
 @app.command(name="h", hidden=True)
 def display_help(ctx: typer.Context):
     """(or "h") Show this help message"""
     print(ctx.parent.get_help())
+
 
 def main():
     os.makedirs(TASK_TRACKER_DIR, exist_ok=True)
