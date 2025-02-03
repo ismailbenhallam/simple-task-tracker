@@ -9,9 +9,7 @@
 ![GitHub Repo stars](https://img.shields.io/github/stars/ismailbenhallam/simple-task-tracker?)-->
 
 A command-line interface (CLI) application to keep track of your tasks, their starting time, finishing time and their
-durations.
-Tasks could be grouped in projects.
-
+durations. The CLI uses a SQLite DB to store data.
 ## Installation
 
 You can install the package using either `pipx` or `pip`.
