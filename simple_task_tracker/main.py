@@ -94,7 +94,7 @@ def init_db():
             version = 0
 
         version += 1
-        migrations_path = os.path.join(os.getcwd(), MIGRATIONS_DIR)
+        migrations_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), MIGRATIONS_DIR)
 
         # Execute migrations
         migration = os.path.join(migrations_path, f"v{version}.sql")
