@@ -109,6 +109,7 @@ def init_db():
             version += 1
             migration = os.path.join(migrations_path, f"v{version}.sql")
 
+
 def _format_date(d: date) -> str:
     """Format a date in DD-MM-YYYY format."""
     return d.strftime("%d-%m-%Y")
@@ -154,11 +155,14 @@ def calculate_task_duration(conn, task_name: str, start_date: date, end_date: da
 
 @app.command()
 @app.command(name="s", hidden=True)
-def start(task_parts: List[str] = typer.Argument(..., help="Task name (can include spaces)")):
+def start(task_parts: List[str] = typer.Argument(..., help="Task name (can include spaces)"),
+          tag: List[str] = typer.Option(None, "--tag", "-t", help="tag (can include spaces)"),
+          ):
     """(or "s") Start a task"""
     today = date.today()
     start_time = datetime.now()
     task = " ".join(task_parts)
+    tag = " ".join(tag) if tag else None
 
     with get_db() as conn:
         # Check for existing active tasks efficiently
@@ -183,8 +187,8 @@ def start(task_parts: List[str] = typer.Argument(..., help="Task name (can inclu
 
         # Start the new task
         conn.execute(
-            "INSERT INTO tasks (name, started_at, date) VALUES (?, ?, ?)",
-            (task, start_time, today)
+            "INSERT INTO tasks (name, started_at, date, tag) VALUES (?, ?, ?, ?)",
+            (task, start_time, today, tag)
         )
         conn.commit()
 
@@ -227,18 +231,20 @@ def finish(task_parts: List[str] = typer.Argument(..., help="Task name (can incl
 @app.command(name="c", hidden=True)
 def create(
         task_parts: List[str] = typer.Argument(..., help="Task name (can include spaces)"),
-        duration_in_minutes: int = typer.Argument(..., help="Duration in minutes")
+        duration_in_minutes: int = typer.Argument(..., help="Duration in minutes"),
+        tag_parts: List[str] = typer.Option(None, "--tag", "-t", help="tag (can include spaces)"),
 ):
     """(or "c") Create a new task as ended. The ended time is the time right now, and the starting time is calculated using (now - duration_in_minutes)"""
     ended_at = datetime.now()
     started_at = ended_at - timedelta(minutes=duration_in_minutes)
     today = ended_at.date()
     task = " ".join(task_parts)
+    tag_parts = " ".join(tag_parts) if tag_parts else None
 
     with get_db() as conn:
         conn.execute(
-            "INSERT INTO tasks (name, started_at, ended_at, date) VALUES (?, ?, ?, ?)",
-            (task, started_at, ended_at, today)
+            "INSERT INTO tasks (name, started_at, ended_at, date, tag) VALUES (?, ?, ?, ?, ?)",
+            (task, started_at, ended_at, today, tag_parts)
         )
         conn.commit()
 
@@ -415,6 +421,7 @@ def log(
             """
             SELECT 
                 name,
+                tag,
                 SUM(
                     CASE 
                         WHEN ended_at IS NOT NULL 
@@ -436,24 +443,37 @@ def log(
             raise typer.Exit(code=0)
 
         total_duration = timedelta()
+        tag_duration_map: dict[str, timedelta] = dict()
 
         if not brief:
             # Get the day of the week
             day_of_week = target_date.strftime('%A')
-            typer.echo(f"\n-------- Tasks for {_format_date(target_date)} ({day_of_week}) --------")
+            typer.echo(f"\n-------- {_format_date(target_date)} ({day_of_week}) --------")
+            typer.echo("Tasks")
 
         for task in tasks:
-            duration_seconds = task["total_seconds"] or 0
-            duration = timedelta(seconds=duration_seconds)
-            total_duration += duration
+            task_duration_seconds = task["total_seconds"] or 0
+            task_duration = timedelta(seconds=task_duration_seconds)
+            total_duration += task_duration
+
+            if task["tag"]:
+                tag = task["tag"]
+                if tag in tag_duration_map:
+                    tag_duration_map[tag] += task_duration
+                else:
+                    tag_duration_map[tag] = task_duration
 
             if not brief:
                 status = "⏳ " if task["active_count"] > 0 else "✅ "
-                typer.echo(f"• {status} {task['name']} => {_format_timedelta(duration)}")
+                typer.echo(f"• {status} {task['name']} => {_format_timedelta(task_duration)}")
+
+        if not brief:
+            typer.echo("\nTags")
+            for tag, duration in tag_duration_map.items():
+                typer.echo(f"• {tag} => {_format_timedelta(duration)}")
+            typer.echo()
 
         typer.echo(f">> ⏱ Total duration : {_format_timedelta(total_duration)}")
-        if not brief:
-            typer.echo()
 
 
 @app.command()
@@ -510,7 +530,7 @@ def grep(
         pattern_parts: List[str] = typer.Argument(..., help="Search pattern (can include spaces)"),
         date_str: str = typer.Option(None, "--date", "-d", help="Optional date in DD-MM format to limit search")
 ):
-    """(or "g") Search for tasks containing the given pattern (case insensitive). Optionally limit to a specific date"""
+    """(or "g") Search for tasks containing the given pattern (case-insensitive). Optionally limit to a specific date"""
     pattern = " ".join(pattern_parts)
 
     try:
