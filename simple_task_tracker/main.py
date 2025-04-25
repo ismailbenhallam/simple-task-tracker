@@ -11,6 +11,7 @@ app = typer.Typer(add_help_option=False, add_completion=False)
 
 APP_NAME = "simple_task_tracker"
 DB_NAME = "tasks.db"
+MIGRATIONS_DIR = "db_migrations"
 TASK_TRACKER_DIR: str = typer.get_app_dir(APP_NAME)
 
 
@@ -78,19 +79,35 @@ def get_db() -> Iterator[sqlite3.Connection]:
 
 def init_db():
     with get_db() as conn:
+        # Create migrations tracking table
         conn.execute("""
-            CREATE TABLE IF NOT EXISTS tasks (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                started_at TIMESTAMP NOT NULL,
-                ended_at TIMESTAMP,
-                date DATE NOT NULL
-            )
+        CREATE TABLE IF NOT EXISTS schema_version (
+            version INTEGER PRIMARY KEY,
+            applied_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
         """)
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_tasks_date ON tasks(date)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_tasks_name_date ON tasks(name, date)")
         conn.commit()
 
+        # Get latest migration version
+        version = conn.execute("SELECT max(version) FROM schema_version").fetchone()[0]
+        if version is None:
+            version = 0
+
+        version += 1
+        migrations_path = os.path.join(os.getcwd(), MIGRATIONS_DIR)
+
+        # Execute migrations
+        migration = os.path.join(migrations_path, f"v{version}.sql")
+        while os.path.exists(migration):
+            with open(migration, "r") as file:
+                sql = file.read()
+
+            conn.executescript(sql)
+            conn.execute(f"INSERT INTO schema_version (version) VALUES ({version})")
+            conn.commit()
+
+            version += 1
+            migration = os.path.join(migrations_path, f"v{version}.sql")
 
 def _format_date(d: date) -> str:
     """Format a date in DD-MM-YYYY format."""
