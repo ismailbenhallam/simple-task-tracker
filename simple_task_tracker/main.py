@@ -465,9 +465,9 @@ def log(
 
             if not brief:
                 status = "⏳ " if task["active_count"] > 0 else "✅ "
-                typer.echo(f"• {status} {task['name']} => {_format_timedelta(task_duration)}")
+                typer.echo(f"• {status} {task['name']} {f"[{task['tag']}]" if task["tag"] else ''} => {_format_timedelta(task_duration)}")
 
-        if not brief:
+        if not brief and len(tag_duration_map) > 0:
             typer.echo("\nTags")
             for tag, duration in tag_duration_map.items():
                 typer.echo(f"• {tag} => {_format_timedelta(duration)}")
@@ -589,7 +589,7 @@ def grep(
             # Print date header when date changes
             if current_date != task['date']:
                 current_date = task['date']
-                typer.echo(f"\n-------- {_format_date(current_date)} ({current_date.strftime('%A')}) --------")
+                typer.echo(f"\n-------- {current_date.strftime('%A')} {_format_date(current_date)} --------")
 
             duration_seconds = task["total_seconds"] or 0
             daily_total_seconds += duration_seconds
