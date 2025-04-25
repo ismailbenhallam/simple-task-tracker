@@ -25,6 +25,9 @@ setup(
             "tt=simple_task_tracker.main:main",
         ],
     },
+    package_data={
+        "simple_task_tracker": ["db_migrations/*.sql"],
+    },
     classifiers=[
         "Environment :: Console",
         "Programming Language :: Python :: 3.11",
