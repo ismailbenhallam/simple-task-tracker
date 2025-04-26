@@ -125,6 +125,9 @@ def _format_timedelta(delta: timedelta) -> str:
 
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
+def _timedelta_to_hours(td):
+    """Convert timedelta to hours as a float"""
+    return round(td.total_seconds() / 3600, 2)
 
 def get_week_bounds(target_date: date | None = None) -> Tuple[date, date]:
     """Get the start and end dates of the week containing the target date"""
@@ -448,7 +451,7 @@ def log(
         if not brief:
             # Get the day of the week
             day_of_week = target_date.strftime('%A')
-            typer.echo(f"\n-------- {_format_date(target_date)} ({day_of_week}) --------")
+            typer.echo(f"\n-------- {day_of_week} {_format_date(target_date)} --------")
             typer.echo("Tasks")
 
         for task in tasks:
@@ -465,12 +468,12 @@ def log(
 
             if not brief:
                 status = "⏳ " if task["active_count"] > 0 else "✅ "
-                typer.echo(f"• {status} {task['name']} {f"[{task['tag']}]" if task["tag"] else ''} => {_format_timedelta(task_duration)}")
+                typer.echo(f"• {status} {task['name']} {f"[{task['tag']}]" if task["tag"] else ''} => {_format_timedelta(task_duration)} ({_timedelta_to_hours(task_duration)}h)")
 
         if not brief and len(tag_duration_map) > 0:
             typer.echo("\nTags")
             for tag, duration in tag_duration_map.items():
-                typer.echo(f"• {tag} => {_format_timedelta(duration)}")
+                typer.echo(f"• {tag} => {_format_timedelta(duration)} ({_timedelta_to_hours(duration)}h)")
             typer.echo()
 
         typer.echo(f">> ⏱ Total duration : {_format_timedelta(total_duration)}")
