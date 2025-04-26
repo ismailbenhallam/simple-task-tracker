@@ -125,9 +125,11 @@ def _format_timedelta(delta: timedelta) -> str:
 
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
+
 def _timedelta_to_hours(td):
     """Convert timedelta to hours as a float"""
     return round(td.total_seconds() / 3600, 2)
+
 
 def get_week_bounds(target_date: date | None = None) -> Tuple[date, date]:
     """Get the start and end dates of the week containing the target date"""
@@ -227,7 +229,8 @@ def finish(task_parts: List[str] = typer.Argument(..., help="Task name (can incl
         total_duration = calculate_task_duration(conn, task, today)
         conn.commit()
 
-    typer.echo(f"\nTask '{task}' ended.\nTotal time spent on this task today: {_format_timedelta(total_duration)}.")
+    typer.echo(
+        f"\nTask '{task}' ended.\nTotal time spent on this task today: {_format_timedelta(total_duration)} ({_timedelta_to_hours(total_duration)}h).")
 
 
 @app.command()
@@ -468,7 +471,8 @@ def log(
 
             if not brief:
                 status = "⏳ " if task["active_count"] > 0 else "✅ "
-                typer.echo(f"• {status} {task['name']} {f"[{task['tag']}]" if task["tag"] else ''} => {_format_timedelta(task_duration)} ({_timedelta_to_hours(task_duration)}h)")
+                typer.echo(
+                    f"• {status} {task['name']} {f"[{task['tag']}]" if task["tag"] else ''} => {_format_timedelta(task_duration)} ({_timedelta_to_hours(task_duration)}h)")
 
         if not brief and len(tag_duration_map) > 0:
             typer.echo("\nTags")
@@ -476,7 +480,8 @@ def log(
                 typer.echo(f"• {tag} => {_format_timedelta(duration)} ({_timedelta_to_hours(duration)}h)")
             typer.echo()
 
-        typer.echo(f">> ⏱ Total duration : {_format_timedelta(total_duration)}")
+        typer.echo(
+            f">> ⏱ Total duration : {_format_timedelta(total_duration)} ({_timedelta_to_hours(total_duration)}h)")
 
 
 @app.command()
