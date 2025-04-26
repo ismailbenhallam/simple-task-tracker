@@ -159,7 +159,7 @@ def calculate_task_duration(conn, task_name: str, start_date: date, end_date: da
 @app.command()
 @app.command(name="s", hidden=True)
 def start(task_parts: List[str] = typer.Argument(..., help="Task name (can include spaces)"),
-          tag: List[str] = typer.Option(None, "--tag", "-t", help="tag (can include spaces)"),
+          tag: List[str] = typer.Option(None, "--tag", "-t", help="tag"),
           ):
     """(or "s") Start a task"""
     today = date.today()
@@ -235,7 +235,7 @@ def finish(task_parts: List[str] = typer.Argument(..., help="Task name (can incl
 def create(
         task_parts: List[str] = typer.Argument(..., help="Task name (can include spaces)"),
         duration_in_minutes: int = typer.Argument(..., help="Duration in minutes"),
-        tag_parts: List[str] = typer.Option(None, "--tag", "-t", help="tag (can include spaces)"),
+        tag_parts: List[str] = typer.Option(None, "--tag", "-t", help="tag"),
 ):
     """(or "c") Create a new task as ended. The ended time is the time right now, and the starting time is calculated using (now - duration_in_minutes)"""
     ended_at = datetime.now()

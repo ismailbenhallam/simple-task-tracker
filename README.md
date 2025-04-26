@@ -19,7 +19,7 @@ You can install the package using either `pipx` or `pip`.
 > activating a virtual environment.  
 > [Check out this page](https://pipx.pypa.io/stable/comparisons/) to compare **pip** and **pipx**.
 
-### Using pipx
+### Using pipx (recommended)
 
 ```shell
 pipx install simple-task-tracker
